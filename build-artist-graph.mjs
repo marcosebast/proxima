@@ -1,14 +1,14 @@
 // build-artist-graph.mjs
-// Genera artist-graph.json con red de similares de 2 niveles por curador
+// Genera artist-graph.json con:
+// - level1: núcleos editoriales por curador
+// - level2: similares via Last.fm por cada artista de la batea
 // Uso: node build-artist-graph.mjs (o via GitHub Actions)
-// Genera: artist-graph.json
 
-import { writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 
-const CLIENT_ID     = process.env.SPOTIFY_CLIENT_ID     || 'eeaf61207380435790cf779abec1b0b4';
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || 'cdc8542a446146a78dba27b473da108f';
+const LASTFM_KEY = process.env.LASTFM_API_KEY || '06804cc802d1190bcaea93f260a45c14';
 
-// Artistas núcleo por curador (nivel 1 — definidos editorialmente)
+// Artistas núcleo por curador (nivel 1 — editorial)
 const NUCLEOS = {
   peggy:     ['Peggy Gou', 'DJ Koze', 'Roman Flügel', 'Prins Thomas', 'Antal'],
   jamie:     ['Jamie xx', 'Gil Scott-Heron', 'Four Tet', 'Caribou', 'Actress'],
@@ -19,78 +19,66 @@ const NUCLEOS = {
   miranda:   ['Miranda!', 'Juliana Gattas', 'ABBA', 'Virus', 'Lali'],
 };
 
-async function getToken() {
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64'),
-    },
-    body: 'grant_type=client_credentials',
-  });
-  const data = await res.json();
-  if (!data.access_token) throw new Error('Token fallido: ' + JSON.stringify(data));
-  console.log('✅ Token obtenido');
-  return data.access_token;
-}
-
-async function searchArtistId(token, name) {
-  const res = await fetch(
-    `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`,
-    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.artists?.items?.[0]?.id || null;
-}
-
-async function getRelated(token, artistId) {
-  const res = await fetch(
-    `https://api.spotify.com/v1/artists/${artistId}/related-artists`,
-    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) }
-  );
-  if (!res.ok) return [];
-  const data = await res.json();
-  return (data.artists || []).slice(0, 5).map(a => a.name);
+async function getSimilar(artistName) {
+  const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getSimilar&artist=${encodeURIComponent(artistName)}&limit=5&autocorrect=1&api_key=${LASTFM_KEY}&format=json`;
+  try {
+    const res  = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    return (data.similarartists?.artist || []).map(a => a.name);
+  } catch {
+    return [];
+  }
 }
 
 async function pause(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function main() {
-  const token = await getToken();
-  const graph = {};
+  const db      = JSON.parse(readFileSync('./database.json', 'utf-8'));
+  const artists = [...new Set(db.map(t => t.a).filter(Boolean))];
+  console.log(`🎵 Artistas únicos en batea: ${artists.length}`);
 
-  for (const [curador, nucleos] of Object.entries(NUCLEOS)) {
-    console.log(`\n🎛️  Procesando: ${curador}`);
-    graph[curador] = { level1: [], level2: [] };
+  // Parte 1: similares de todos los artistas de la batea
+  const similarMap = {}; // artistName → [similares]
+  let procesados = 0;
 
-    for (const nombre of nucleos) {
-      const id = await searchArtistId(token, nombre);
-      await pause(120);
-      if (!id) { console.warn(`  ⚠️  Sin ID: ${nombre}`); continue; }
-
-      graph[curador].level1.push(nombre);
-      console.log(`  ✓ L1: ${nombre}`);
-
-      const similares = await getRelated(token, id);
-      await pause(120);
-
-      for (const s of similares) {
-        if (!graph[curador].level2.includes(s) && !graph[curador].level1.includes(s)) {
-          graph[curador].level2.push(s);
-        }
-      }
-    }
-
-    console.log(`  → L1: ${graph[curador].level1.length} · L2: ${graph[curador].level2.length}`);
+  for (const artist of artists) {
+    const similares = await getSimilar(artist);
+    if (similares.length) similarMap[artist] = similares;
+    procesados++;
+    if (procesados % 100 === 0) console.log(`🔄 ${procesados}/${artists.length}...`);
+    await pause(120);
   }
 
-  writeFileSync('./artist-graph.json', JSON.stringify(graph, null, 2));
-  console.log('\n✅ Guardado: artist-graph.json');
+  console.log(`✅ Similares obtenidos para ${Object.keys(similarMap).length} artistas`);
 
-  Object.entries(graph).forEach(([c, g]) => {
-    console.log(`${c}: ${g.level1.length} núcleo + ${g.level2.length} similares`);
-  });
+  // Parte 2: construir grafo por curador
+  const graph = {};
+  for (const [curador, nucleos] of Object.entries(NUCLEOS)) {
+    // level2 = similares Last.fm de los artistas núcleo
+    const level2 = new Set();
+    for (const n of nucleos) {
+      const sims = await getSimilar(n);
+      sims.forEach(s => { if (!nucleos.includes(s)) level2.add(s); });
+      await pause(120);
+    }
+
+    graph[curador] = {
+      level1: nucleos,
+      level2: [...level2],
+    };
+
+    console.log(`🎛️  ${curador}: L1=${nucleos.length} L2=${level2.size}`);
+  }
+
+  // Output final
+  const output = {
+    updatedAt:  new Date().toISOString(),
+    curadores:  graph,
+    similarMap, // artista → similares (para expansión en el motor)
+  };
+
+  writeFileSync('./artist-graph.json', JSON.stringify(output, null, 2));
+  console.log('\n✅ Guardado: artist-graph.json');
 }
 
 main().catch(console.error);
