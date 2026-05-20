@@ -1,5 +1,5 @@
 // generate-upcoming.mjs
-// Consulta Bandsintown por cada artista de la batea
+// Consulta Setlist.fm por cada artista de la batea
 // y genera upcoming.json con los que tocan en Buenos Aires en los próximos 30 días
 // Corre automáticamente via GitHub Actions los días 1 y 15 de cada mes
 
@@ -8,16 +8,21 @@ import { readFileSync, writeFileSync } from 'fs';
 const CITY    = 'Buenos Aires';
 const COUNTRY = 'AR';
 const DAYS    = 30;
-const APP_ID  = 'proxima';
+const API_KEY = process.env.SETLISTFM_API_KEY || 'RTBOZfGbtIn6YUjctAkGJxCyvz3lp5OnUQ1b';
 
 async function getEvents(artistName) {
-  const url = `https://rest.bandsintown.com/artists/${encodeURIComponent(artistName)}/events?app_id=${APP_ID}`;
+  const url = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(artistName)}&cityName=Buenos+Aires&p=1`;
   try {
-    const res  = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, {
+      headers: {
+        'x-api-key': API_KEY,
+        'Accept': 'application/json',
+      },
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     const data = await res.json();
-    if (!Array.isArray(data)) return [];
-    return data;
+    return data.setlist || [];
   } catch {
     return [];
   }
@@ -31,16 +36,20 @@ async function main() {
   const hoy   = new Date();
   const limit = new Date(hoy.getTime() + DAYS * 24 * 60 * 60 * 1000);
 
-  const upcoming = []; // { artist, date, venue }
+  const upcoming = [];
   let procesados = 0;
 
   for (const artist of artists) {
     const events = await getEvents(artist);
 
     for (const ev of events) {
-      const city    = ev.venue?.city    || '';
-      const country = ev.venue?.country || '';
-      const date    = new Date(ev.datetime || ev.start?.datetime || '');
+      const city    = ev.venue?.city?.name    || '';
+      const country = ev.venue?.city?.country?.code || '';
+      // Setlist.fm devuelve fechas en formato dd-MM-yyyy
+      const parts = (ev.eventDate || '').split('-');
+      const date  = parts.length === 3
+        ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+        : new Date('');
 
       if (
         country === COUNTRY &&
@@ -60,11 +69,9 @@ async function main() {
     procesados++;
     if (procesados % 100 === 0) console.log(`🔄 ${procesados}/${artists.length}...`);
 
-    // Pausa para no saturar
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
   }
 
-  // Artistas únicos con shows próximos
   const artistsUpcoming = [...new Set(upcoming.map(e => e.artist))];
 
   const output = {
@@ -75,7 +82,7 @@ async function main() {
   };
 
   writeFileSync('./upcoming.json', JSON.stringify(output, null, 2));
-  console.log(`\n✅ ${upcoming.length} eventos encontrados — ${artistsUpcoming.length} artistas`);
+  console.log(`\n✅ ${upcoming.length} eventos — ${artistsUpcoming.length} artistas`);
   console.log('📄 Guardado: upcoming.json');
 }
 
