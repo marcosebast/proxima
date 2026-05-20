@@ -959,8 +959,6 @@ async function crearEnSpotify(token, trackUris, playlistName) {
     typeof u === 'string' && u.startsWith('spotify:track:') && u.length > 14
   );
 
-  console.log('URIs válidos a agregar:', urisValidos.length, urisValidos.slice(0,3));
-
   // Agregar tracks en batches de 100
   for (let i = 0; i < urisValidos.length; i += 100) {
     const res = await fetch(`https://api.spotify.com/v1/playlists/${pl.id}/tracks`, {
