@@ -346,6 +346,74 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── PANTALLA SPOTIFY ── */
+    .spotify-estado {
+      min-height: 100vh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .spotify-estado-icon {
+      font-size: 2.5rem;
+      color: var(--fg);
+      line-height: 1;
+    }
+
+    .spotify-estado-titulo {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .spotify-estado-desc {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .btn-abrir-spotify {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--fg);
+      padding: 1rem 2rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-abrir-spotify:hover { background: var(--fg); color: var(--bg); }
+
+    .btn-volver {
+      background: transparent;
+      color: var(--dim);
+      border: none;
+      padding: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .btn-volver:hover { color: var(--fg); }
+
     @media (max-width: 520px) {
       .curador-grid { grid-template-columns: repeat(3, 1fr); }
       .context-time { font-size: 2.2rem; }
@@ -394,6 +462,9 @@
 
 </main>
 
+<!-- PANTALLA SPOTIFY -->
+<div class="spotify-estado" id="spotify-estado"></div>
+
 <!-- BOTTOM SHEET -->
 <div class="sheet-overlay" id="sheet-overlay"></div>
 <div class="bottom-sheet" id="bottom-sheet">
@@ -414,7 +485,7 @@ const CURADORES = {
   floating: { label:'Floating Points',sub:'jazz · modular',         e:0.44, v:0.32, ac:0.65, ins:0.78, spe:0.04, bpm:0.32 },
   stvincent:{ label:'St. Vincent',    sub:'art rock · guitarra',    e:0.72, v:0.52, ac:0.35, ins:0.30, spe:0.16, bpm:0.58 },
   boniver:  { label:'Bon Iver',       sub:'folk · acústico',        e:0.30, v:0.42, ac:0.82, ins:0.45, spe:0.08, bpm:0.25 },
-  miranda:  { label:'Miranda!',       sub:'synth-pop · español',    e:0.78, v:0.85, ac:0.06, ins:0.12, spe:0.25, bpm:0.62 },
+  miranda:  { label:'Miranda!',       sub:'synth-pop · español',    e:0.78, v:0.85, ac:0.06, ins:0.12, spe:0.25, bpm:0.62, hidden:true },
 };
 
 // Pesos de cada dimensión en el scoring
@@ -478,7 +549,7 @@ function spiderSVG(p, active) {
 // ══════════════════════════════════════════════
 function renderCuradores() {
   const grid = document.getElementById('grid-curador');
-  const keys = Object.keys(CURADORES);
+  const keys = Object.keys(CURADORES).filter(k => !CURADORES[k].hidden);
   grid.innerHTML = keys.map((key, i) => {
     const c = CURADORES[key];
     const active = i === 0;
@@ -912,14 +983,50 @@ async function crearPlaylistSpotify() {
   }
 }
 
+// ══════════════════════════════════════════════
+// PANTALLA DE RETORNO OAUTH
+// ══════════════════════════════════════════════
+function mostrarEstadoSpotify(estado, url) {
+  // Ocultar app, mostrar pantalla de estado
+  document.querySelector('.app').style.display = 'none';
+
+  const pantalla = document.getElementById('spotify-estado');
+  pantalla.style.display = 'flex';
+
+  if (estado === 'cargando') {
+    pantalla.innerHTML = `
+      <div class="spotify-estado-icon">◌</div>
+      <div class="spotify-estado-titulo">Creando tu playlist...</div>
+      <div class="spotify-estado-desc">Estamos armando tu set en Spotify.</div>`;
+  } else if (estado === 'ok') {
+    pantalla.innerHTML = `
+      <div class="spotify-estado-icon">✓</div>
+      <div class="spotify-estado-titulo">Playlist creada</div>
+      <div class="spotify-estado-desc">Ya está disponible en tu cuenta de Spotify. Podés encontrarla en tu biblioteca.</div>
+      <a class="btn-abrir-spotify" href="${url}" target="_blank">Abrir en Spotify</a>
+      <button class="btn-volver" onclick="volverAProxima()">← Volver a Próxima</button>`;
+  } else {
+    pantalla.innerHTML = `
+      <div class="spotify-estado-icon">✕</div>
+      <div class="spotify-estado-titulo">Algo salió mal</div>
+      <div class="spotify-estado-desc">No pudimos crear la playlist. Intentá de nuevo.</div>
+      <button class="btn-volver" onclick="volverAProxima()">← Volver a Próxima</button>`;
+  }
+}
+
+function volverAProxima() {
+  document.getElementById('spotify-estado').style.display = 'none';
+  document.querySelector('.app').style.display = 'flex';
+}
+
 // Manejar el redirect de vuelta desde Spotify OAuth
 async function manejarOAuthCallback() {
   const params = new URLSearchParams(window.location.search);
   const code   = params.get('code');
   if (!code) return;
 
-  // Limpiar URL
   window.history.replaceState({}, '', window.location.pathname);
+  mostrarEstadoSpotify('cargando');
 
   try {
     spotifyToken = await intercambiarToken(code);
@@ -932,10 +1039,11 @@ async function manejarOAuthCallback() {
 
     if (uris.length) {
       const url = await crearEnSpotify(spotifyToken, uris, name);
-      window.open(url, '_blank');
+      mostrarEstadoSpotify('ok', url);
     }
   } catch(e) {
     console.error('OAuth error:', e);
+    mostrarEstadoSpotify('error');
   }
 }
 
