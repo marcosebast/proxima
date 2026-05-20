@@ -923,27 +923,55 @@ async function intercambiarToken(code) {
 }
 
 async function crearEnSpotify(token, trackUris, playlistName) {
+  const pantalla = document.getElementById('spotify-estado');
+
+  const setEstado = (texto) => {
+    const el = pantalla.querySelector('.spotify-estado-step');
+    if (el) el.textContent = texto;
+  };
+
+  // Estado inicial con steps
+  pantalla.innerHTML = `
+    <div class="spotify-estado-icon">◌</div>
+    <div class="spotify-estado-titulo">Creando tu playlist...</div>
+    <div class="spotify-estado-step spotify-estado-desc">Conectando con Spotify...</div>`;
+
   // Obtener user id
-  const meRes  = await fetch('https://api.spotify.com/v1/me', {
+  const meRes = await fetch('https://api.spotify.com/v1/me', {
     headers: { Authorization: `Bearer ${token}` }
   });
   const me = await meRes.json();
 
+  setEstado('Creando playlist...');
+
   // Crear playlist
-  const plRes  = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+  const plRes = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: playlistName, description: 'Generada por Próxima', public: false }),
   });
   const pl = await plRes.json();
 
+  setEstado(`Agregando ${trackUris.length} tracks...`);
+
+  // Limpiar y validar URIs antes de enviar
+  const urisValidos = trackUris.filter(u =>
+    typeof u === 'string' && u.startsWith('spotify:track:') && u.length > 14
+  );
+
+  console.log('URIs válidos a agregar:', urisValidos.length, urisValidos.slice(0,3));
+
   // Agregar tracks en batches de 100
-  for (let i = 0; i < trackUris.length; i += 100) {
-    await fetch(`https://api.spotify.com/v1/playlists/${pl.id}/tracks`, {
+  for (let i = 0; i < urisValidos.length; i += 100) {
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${pl.id}/tracks`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uris: trackUris.slice(i, i + 100) }),
+      body: JSON.stringify({ uris: urisValidos.slice(i, i + 100) }),
     });
+    if (!res.ok) {
+      const err = await res.json();
+      console.error('Error agregando tracks:', err);
+    }
   }
 
   return pl.external_urls?.spotify || `https://open.spotify.com/playlist/${pl.id}`;
@@ -1006,7 +1034,7 @@ function mostrarEstadoSpotify(estado, url) {
     pantalla.innerHTML = `
       <div class="spotify-estado-icon">✓</div>
       <div class="spotify-estado-titulo">Playlist creada</div>
-      <div class="spotify-estado-desc">Ya está disponible en tu cuenta de Spotify. Podés encontrarla en tu biblioteca.</div>
+      <div class="spotify-estado-desc">Ya existe en tu cuenta. Spotify puede tardar unos minutos en mostrarla en tu biblioteca — es normal.</div>
       <a class="btn-abrir-spotify" href="${url}" target="_blank">Abrir en Spotify</a>
       <button class="btn-volver" onclick="volverAProxima()">← Volver a Próxima</button>`;
   } else {
