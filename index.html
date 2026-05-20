@@ -793,6 +793,7 @@ function renderResultado(items, curKey, espacio, target) {
 
   // Guardar tracks para Spotify
   window._lastPlaylist = tracks;
+  sessionStorage.setItem('last_uris', JSON.stringify(tracks.map(t => t.id).filter(Boolean)));
 
   document.getElementById('sheet-inner').innerHTML = cardHTML;
   openSheet();
@@ -960,9 +961,9 @@ async function crearPlaylistSpotify() {
   const nombre  = `Próxima — ${CURADORES[curador]?.label} × ${espacio} · ${stamp}`;
 
   // Obtener URIs del estado guardado
-  const trackUris = (window._lastPlaylist || [])
-    .map(t => t.id)
-    .filter(Boolean);
+  const trackUris = window._lastPlaylist
+    ? window._lastPlaylist.map(t => t.id).filter(Boolean)
+    : JSON.parse(sessionStorage.getItem('last_uris') || '[]');
 
   if (!trackUris.length) return;
 
