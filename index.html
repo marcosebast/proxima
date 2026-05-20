@@ -1,790 +1,777 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Próxima</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Próxima</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
 
-      :root {
-        --bg: #080808;
-        --fg: #efefef;
-        --dim: #444;
-        --border: #1a1a1a;
-        --mono: 'DM Mono', monospace;
-        --sans: 'DM Sans', sans-serif;
-      }
+    :root {
+      --bg:      #080808;
+      --fg:      #efefef;
+      --dim:     #888;
+      --border:  #1a1a1a;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+    }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-      body {
-        background: var(--bg);
-        color: var(--fg);
-        font-family: var(--sans);
-        -webkit-font-smoothing: antialiased;
-        min-height: 100vh;
-        padding: 4rem 2rem 6rem;
-        display: flex;
-        justify-content: center;
-      }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding: 4rem 2rem 6rem;
+      display: flex;
+      justify-content: center;
+    }
 
-      .app {
-        width: 100%;
-        max-width: 680px;
-        display: flex;
-        flex-direction: column;
-        gap: 5rem;
-      }
+    .app {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+    }
 
-      /* ── HEADER ── */
-      .header {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
+    /* ── HEADER ── */
+    .header { display: flex; flex-direction: column; gap: 2rem; }
 
-      .wordmark {
-        font-family: var(--mono);
-        font-size: 0.7rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--dim);
-      }
+    .wordmark {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
 
-      .context-time {
-        font-family: var(--mono);
-        font-size: 2.8rem;
-        font-weight: 300;
-        letter-spacing: -0.03em;
-        line-height: 1;
-      }
+    .context-time {
+      font-family: var(--mono);
+      font-size: 2.8rem;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
 
-      .context-bloque {
-        font-family: var(--mono);
-        font-size: 0.7rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--dim);
-        margin-top: 0.5rem;
-      }
+    .context-bloque {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: 0.5rem;
+    }
 
-      .context-desc {
-        font-size: 0.82rem;
-        color: #aeafad;
-        line-height: 1.7;
-        max-width: 480px;
-        margin-top: 0.6rem;
-        font-family: var(--mono);
-        font-style: italic;
-      }
+    .context-desc {
+      font-size: 0.82rem;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-top: 0.6rem;
+      font-family: var(--mono);
+    }
 
-      /* ── SELECTOR ── */
-      .selector-section {
-        display: flex;
-        flex-direction: column;
-        gap: 2.5rem;
-      }
+    /* ── SELECTOR ── */
+    .selector-section { display: flex; flex-direction: column; gap: 2.5rem; }
 
-      .selector-label {
-        font-family: var(--mono);
-        font-size: 0.65rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--dim);
-        margin-bottom: 0.75rem;
-      }
+    .selector-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 0.75rem;
+    }
 
-      .espacio-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1px;
-        background: var(--border);
-        border: 1px solid var(--border);
-      }
+    .espacio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
 
-      .espacio-card {
-        background: var(--bg);
-        padding: 1.5rem;
-        cursor: pointer;
-        transition: background 0.15s;
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
+    .espacio-card {
+      background: var(--bg);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
 
-      .espacio-card:hover {
-        background: #111;
-      }
-      .espacio-card.active {
-        background: var(--fg);
-        color: var(--bg);
-      }
-      .espacio-card.active .espacio-sub {
-        color: #666;
-      }
+    .espacio-card:hover { background: #111; }
+    .espacio-card.active { background: var(--fg); color: var(--bg); }
+    .espacio-card.active .espacio-sub { color: var(--dim); }
 
-      .espacio-nombre {
-        font-family: var(--mono);
-        font-size: 1.1rem;
-        font-weight: 500;
-      }
-      .espacio-sub {
-        font-family: var(--mono);
-        font-size: 0.62rem;
-        color: var(--dim);
-      }
+    .espacio-nombre { font-family: var(--mono); font-size: 1.1rem; font-weight: 500; }
+    .espacio-sub    { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); }
 
-      .curador-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 1px;
-        background: var(--border);
-        border: 1px solid var(--border);
-      }
+    .curador-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
 
-      .curador-card {
-        background: var(--bg);
-        padding: 1.1rem 0.4rem;
-        cursor: pointer;
-        transition: background 0.15s;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.6rem;
-      }
+    .curador-card {
+      background: var(--bg);
+      padding: 1.1rem 0.4rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
 
-      .curador-card:hover {
-        background: #111;
-      }
-      .curador-card.active {
-        background: var(--fg);
-        color: var(--bg);
-      }
-      .curador-card.active .curador-sub {
-        color: #777;
-      }
+    .curador-card:hover { background: #111; }
+    .curador-card.active { background: var(--fg); color: var(--bg); }
+    .curador-card.active .curador-sub { color: var(--dim); }
 
-      .curador-nombre {
-        font-family: var(--mono);
-        font-size: 0.58rem;
-        letter-spacing: 0.04em;
-        text-align: center;
-        text-transform: uppercase;
-        line-height: 1.3;
-      }
+    .curador-nombre {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.04em;
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
 
-      .curador-sub {
-        font-family: var(--mono);
-        font-size: 0.52rem;
-        color: var(--dim);
-        text-align: center;
-      }
+    .curador-sub {
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      color: var(--dim);
+      text-align: center;
+    }
 
-      .spider-wrap {
-        width: 48px;
-        height: 48px;
-      }
+    .spider-wrap { width: 48px; height: 48px; }
 
-      /* ── BTN ── */
-      .btn-generar {
-        background: var(--fg);
-        color: var(--bg);
-        border: none;
-        padding: 1.1rem;
-        width: 100%;
-        font-family: var(--mono);
-        font-size: 0.72rem;
-        font-weight: 500;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: background 0.15s, transform 0.1s;
-      }
+    /* ── BTN ── */
+    .btn-generar {
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      padding: 1.1rem;
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
 
-      .btn-generar:hover {
-        background: #d8d8d8;
-      }
-      .btn-generar:active {
-        transform: scale(0.996);
-      }
-      .btn-generar:disabled {
-        background: #222;
-        color: #555;
-        cursor: not-allowed;
-      }
+    .btn-generar:hover  { background: #d8d8d8; }
+    .btn-generar:active { transform: scale(0.996); }
+    .btn-generar:disabled { background: #222; color: var(--dim); cursor: not-allowed; }
 
-      /* ── RESULTADO ── */
-      .resultado-header {
-        font-family: var(--mono);
-        font-size: 0.62rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: #aeafad;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border);
-      }
+    /* ── RESULTADO ── */
+    .resultado-header {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
 
-      .track-row {
-        display: grid;
-        grid-template-columns: 26px 1fr 44px;
-        gap: 0.75rem;
-        padding: 0.8rem 0;
-        border-bottom: 1px solid var(--border);
-        align-items: center;
-        opacity: 0;
-        animation: slideUp 0.3s ease forwards;
-      }
+    .track-row {
+      display: grid;
+      grid-template-columns: 26px 1fr 44px;
+      gap: 0.75rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      opacity: 0;
+      animation: slideUp 0.3s ease forwards;
+    }
 
-      .track-num {
-        font-family: var(--mono);
-        font-size: 0.62rem;
-        color: var(--dim);
-      }
-      .track-n {
-        font-size: 0.88rem;
-        line-height: 1.3;
-      }
-      .track-a {
-        font-family: var(--mono);
-        font-size: 0.68rem;
-        color: var(--dim);
-        margin-top: 0.12rem;
-      }
-      .track-score {
-        font-family: var(--mono);
-        font-size: 0.58rem;
-        color: var(--dim);
-        text-align: right;
-        line-height: 1.7;
-      }
+    .track-num  { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); }
+    .track-n    { font-size: 0.88rem; line-height: 1.3; }
+    .track-a    { font-family: var(--mono); font-size: 0.68rem; color: var(--dim); margin-top: 0.12rem; }
+    .track-score{ font-family: var(--mono); font-size: 0.58rem; color: var(--dim); text-align: right; line-height: 1.7; }
 
-      .btn-youtube {
-        margin-top: 2rem;
-        background: transparent;
-        color: var(--fg);
-        border: 1px solid var(--border);
-        padding: 1rem;
-        width: 100%;
-        font-family: var(--mono);
-        font-size: 0.68rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
+    /* ── BOTTOM SHEET ── */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
 
-      .btn-youtube:hover {
-        background: var(--fg);
-        color: var(--bg);
-      }
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
 
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(6px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 11;
+      background: #0f0f0f;
+      border-top: 1px solid var(--border);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 92vh;
+      overflow-y: auto;
+    }
 
-      @media (max-width: 520px) {
-        .curador-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-        .context-time {
-          font-size: 2.2rem;
-        }
-        body {
-          padding: 2.5rem 1.25rem 5rem;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="app">
-      <header class="header">
-        <div class="wordmark">Próxima — Motor v2</div>
-        <div>
-          <div class="context-time" id="ctx-time">--:--</div>
-          <div class="context-bloque" id="ctx-bloque">Analizando...</div>
-          <div class="context-desc" id="ctx-desc">
-            Conectando satélite meteorológico...
-          </div>
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 1rem auto 0;
+    }
+
+    .sheet-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── CARD RESULTADO ── */
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .thumb-grid img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.85);
+      transition: filter 0.2s;
+    }
+
+    .thumb-grid img:hover { filter: brightness(1); }
+
+    .result-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .result-meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .result-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .result-meta-label {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .result-meta-value {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--fg);
+    }
+
+    .result-desc {
+      font-size: 0.88rem;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+
+    .btn-youtube {
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      padding: 1.1rem;
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-youtube:hover { background: #d8d8d8; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 520px) {
+      .curador-grid { grid-template-columns: repeat(3, 1fr); }
+      .context-time { font-size: 2.2rem; }
+      body { padding: 2.5rem 1.25rem 5rem; }
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+
+  <header class="header">
+    <div class="wordmark">Próxima — Motor v2</div>
+    <div>
+      <div class="context-time"  id="ctx-time">--:--</div>
+      <div class="context-bloque" id="ctx-bloque">Analizando...</div>
+      <div class="context-desc"   id="ctx-desc">Conectando satélite meteorológico...</div>
+    </div>
+  </header>
+
+  <section class="selector-section">
+
+    <div>
+      <div class="selector-label">Espacio</div>
+      <div class="espacio-grid" id="grid-espacio">
+        <div class="espacio-card active" data-value="casa">
+          <div class="espacio-nombre">Casa</div>
+          <div class="espacio-sub">intimidad · profundidad</div>
         </div>
-      </header>
-
-      <section class="selector-section">
-        <div>
-          <div class="selector-label">Espacio</div>
-          <div class="espacio-grid" id="grid-espacio">
-            <div class="espacio-card active" data-value="casa">
-              <div class="espacio-nombre">Casa</div>
-              <div class="espacio-sub">intimidad · profundidad</div>
-            </div>
-            <div class="espacio-card" data-value="bar">
-              <div class="espacio-nombre">Bar</div>
-              <div class="espacio-sub">groove · sociabilidad</div>
-            </div>
-          </div>
+        <div class="espacio-card" data-value="bar">
+          <div class="espacio-nombre">Bar</div>
+          <div class="espacio-sub">groove · sociabilidad</div>
         </div>
+      </div>
+    </div>
 
-        <div>
-          <div class="selector-label">Curador</div>
-          <div class="curador-grid" id="grid-curador"></div>
-        </div>
+    <div>
+      <div class="selector-label">Curador</div>
+      <div class="curador-grid" id="grid-curador"></div>
+    </div>
 
-        <button class="btn-generar" id="btn-generar">Generar playlist</button>
-      </section>
+    <button class="btn-generar" id="btn-generar">Generar 60 minutos</button>
 
-      <section
-        id="resultado"
-        style="display: none; flex-direction: column; gap: 0"
-      ></section>
-    </main>
+  </section>
 
-    <script>
-      // ══════════════════════════════════════════════
-      // ADN CURATORIAL — 6 dimensiones (0–1)
-      // e=energy v=valence ac=acousticness
-      // ins=instrumentalness spe=speechiness bpm=norm
-      // ══════════════════════════════════════════════
-      const CURADORES = {
-        peggy: {
-          label: 'Peggy Gou',
-          sub: 'house · acid',
-          e: 0.82,
-          v: 0.65,
-          ac: 0.08,
-          ins: 0.52,
-          spe: 0.1,
-          bpm: 0.68,
-        },
-        jamie: {
-          label: 'Jamie XX',
-          sub: 'UK bass · dub',
-          e: 0.62,
-          v: 0.35,
-          ac: 0.22,
-          ins: 0.68,
-          spe: 0.07,
-          bpm: 0.55,
-        },
-        solange: {
-          label: 'Solange',
-          sub: 'neo-soul · R&B',
-          e: 0.48,
-          v: 0.68,
-          ac: 0.48,
-          ins: 0.18,
-          spe: 0.22,
-          bpm: 0.38,
-        },
-        floating: {
-          label: 'Floating Points',
-          sub: 'jazz · modular',
-          e: 0.44,
-          v: 0.32,
-          ac: 0.65,
-          ins: 0.78,
-          spe: 0.04,
-          bpm: 0.32,
-        },
-        stvincent: {
-          label: 'St. Vincent',
-          sub: 'art rock · guitarra',
-          e: 0.72,
-          v: 0.52,
-          ac: 0.35,
-          ins: 0.3,
-          spe: 0.16,
-          bpm: 0.58,
-        },
-        boniver: {
-          label: 'Bon Iver',
-          sub: 'folk · acústico',
-          e: 0.3,
-          v: 0.42,
-          ac: 0.82,
-          ins: 0.45,
-          spe: 0.08,
-          bpm: 0.25,
-        },
-      };
+  <section id="resultado" style="display:none; flex-direction:column; gap:0;"></section>
 
-      // Pesos de cada dimensión en el scoring
-      const PESOS = { e: 2.2, v: 1.6, ac: 1.2, ins: 1.4, spe: 0.8, bpm: 1.0 };
+</main>
 
-      // Géneros afines por curador
-      const GENEROS_CURADOR = {
-        peggy: ['house', 'deep house', 'tech house', 'electro', 'disco'],
-        jamie: ['uk garage', 'house', 'electronic', 'breakbeat', 'downtempo'],
-        solange: ['rnb', 'funk', 'soul', 'hip-hop', 'electronic'],
-        floating: [
-          'jazz',
-          'electronic',
-          'downtempo',
-          'experimental',
-          'electronica',
-        ],
-        stvincent: [
-          'indie rock',
-          'indie',
-          'alternative',
-          'rock',
-          'experimental',
-        ],
-        boniver: ['indie', 'indie pop', 'folk', 'alternative', 'downtempo'],
-        miranda: ['pop', 'indie pop', 'dance', 'electronic', 'indie'],
-      };
+<!-- BOTTOM SHEET -->
+<div class="sheet-overlay" id="sheet-overlay"></div>
+<div class="bottom-sheet" id="bottom-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-inner" id="sheet-inner"></div>
+</div>
 
-      // BPM normalizado — rango de la batea: 61–172
-      const normBPM = (bpm) =>
-        Math.max(0, Math.min(1, (bpm - 61) / (172 - 61)));
+<script>
+// ══════════════════════════════════════════════
+// ADN CURATORIAL — 6 dimensiones (0–1)
+// e=energy v=valence ac=acousticness
+// ins=instrumentalness spe=speechiness bpm=norm
+// ══════════════════════════════════════════════
+const CURADORES = {
+  peggy:    { label:'Peggy Gou',      sub:'house · acid',           e:0.82, v:0.65, ac:0.08, ins:0.52, spe:0.10, bpm:0.68 },
+  jamie:    { label:'Jamie XX',       sub:'UK bass · dub',          e:0.62, v:0.35, ac:0.22, ins:0.68, spe:0.07, bpm:0.55 },
+  solange:  { label:'Solange',        sub:'neo-soul · R&B',         e:0.48, v:0.68, ac:0.48, ins:0.18, spe:0.22, bpm:0.38 },
+  floating: { label:'Floating Points',sub:'jazz · modular',         e:0.44, v:0.32, ac:0.65, ins:0.78, spe:0.04, bpm:0.32 },
+  stvincent:{ label:'St. Vincent',    sub:'art rock · guitarra',    e:0.72, v:0.52, ac:0.35, ins:0.30, spe:0.16, bpm:0.58 },
+  boniver:  { label:'Bon Iver',       sub:'folk · acústico',        e:0.30, v:0.42, ac:0.82, ins:0.45, spe:0.08, bpm:0.25 },
+  miranda:  { label:'Miranda!',       sub:'synth-pop · español',    e:0.78, v:0.85, ac:0.06, ins:0.12, spe:0.25, bpm:0.62 },
+};
 
-      // Estado global
-      let CATALOGO = [];
-      let energiaBasal = 0.6;
-      let modClimaE = 0;
-      let modClimaV = 0;
+// Pesos de cada dimensión en el scoring
+const PESOS = { e:2.2, v:1.6, ac:1.2, ins:1.4, spe:0.8, bpm:1.0 };
 
-      // ══════════════════════════════════════════════
-      // SPIDER CHART SVG 48×48 — 6 ejes
-      // ══════════════════════════════════════════════
-      function spiderSVG(p, active) {
-        const cx = 24,
-          cy = 24,
-          R = 18,
-          n = 6;
-        const gridCol = active ? '#999' : '#333';
-        const fillCol = active ? 'rgba(0,0,0,0.12)' : 'rgba(239,239,239,0.07)';
-        const shapeCol = active ? '#111' : '#bbb';
+// Géneros afines por curador
+const GENEROS_CURADOR = {
+  peggy:    ['house', 'deep house', 'tech house', 'electro', 'disco'],
+  jamie:    ['uk garage', 'house', 'electronic', 'breakbeat', 'downtempo'],
+  solange:  ['rnb', 'funk', 'soul', 'hip-hop', 'electronic'],
+  floating: ['jazz', 'electronic', 'downtempo', 'experimental', 'electronica'],
+  stvincent:['indie rock', 'indie', 'alternative', 'rock', 'experimental'],
+  boniver:  ['indie', 'indie pop', 'folk', 'alternative', 'downtempo'],
+  miranda:  ['pop', 'indie pop', 'dance', 'electronic', 'indie'],
+};
 
-        function pt(i, r) {
-          const a = (Math.PI * 2 * i) / n - Math.PI / 2;
-          return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-        }
+// BPM normalizado — rango de la batea: 61–172
+const normBPM = bpm => Math.max(0, Math.min(1, (bpm - 61) / (172 - 61)));
 
-        let grid = '';
-        [0.33, 0.66, 1].forEach((ring) => {
-          const pts = Array.from({ length: n }, (_, i) =>
-            pt(i, R * ring).join(',')
-          ).join(' ');
-          grid += `<polygon points="${pts}" fill="none" stroke="${gridCol}" stroke-width="0.5" opacity="0.5"/>`;
-        });
-        for (let i = 0; i < n; i++) {
-          const [x, y] = pt(i, R);
-          grid += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(
-            1
-          )}" y2="${y.toFixed(
-            1
-          )}" stroke="${gridCol}" stroke-width="0.5" opacity="0.4"/>`;
-        }
+// Estado global
+let CATALOGO     = [];
+let energiaBasal = 0.60;
+let modClimaE    = 0;
+let modClimaV    = 0;
 
-        const vals = [p.e, p.v, p.ac, p.ins, p.spe, p.bpm];
-        const poly = vals.map((v, i) => pt(i, R * v).join(',')).join(' ');
+// ══════════════════════════════════════════════
+// SPIDER CHART SVG 48×48 — 6 ejes
+// ══════════════════════════════════════════════
+function spiderSVG(p, active) {
+  const cx = 24, cy = 24, R = 18, n = 6;
+  const gridCol   = active ? '#999' : '#333';
+  const fillCol   = active ? 'rgba(0,0,0,0.12)' : 'rgba(239,239,239,0.07)';
+  const shapeCol  = active ? '#111' : '#bbb';
 
-        return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  function pt(i, r) {
+    const a = (Math.PI * 2 * i / n) - Math.PI / 2;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+
+  let grid = '';
+  [0.33, 0.66, 1].forEach(ring => {
+    const pts = Array.from({length:n}, (_,i) => pt(i, R*ring).join(',')).join(' ');
+    grid += `<polygon points="${pts}" fill="none" stroke="${gridCol}" stroke-width="0.5" opacity="0.5"/>`;
+  });
+  for (let i = 0; i < n; i++) {
+    const [x,y] = pt(i, R);
+    grid += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${gridCol}" stroke-width="0.5" opacity="0.4"/>`;
+  }
+
+  const vals = [p.e, p.v, p.ac, p.ins, p.spe, p.bpm];
+  const poly = vals.map((v,i) => pt(i, R*v).join(',')).join(' ');
+
+  return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     ${grid}
     <polygon points="${poly}" fill="${fillCol}" stroke="${shapeCol}" stroke-width="1.3"/>
   </svg>`;
-      }
+}
 
-      // ══════════════════════════════════════════════
-      // RENDER CURADORES
-      // ══════════════════════════════════════════════
-      function renderCuradores() {
-        const grid = document.getElementById('grid-curador');
-        const keys = Object.keys(CURADORES);
-        grid.innerHTML = keys
-          .map((key, i) => {
-            const c = CURADORES[key];
-            const active = i === 0;
-            return `<div class="curador-card ${
-              active ? 'active' : ''
-            }" data-value="${key}">
+// ══════════════════════════════════════════════
+// RENDER CURADORES
+// ══════════════════════════════════════════════
+function renderCuradores() {
+  const grid = document.getElementById('grid-curador');
+  const keys = Object.keys(CURADORES);
+  grid.innerHTML = keys.map((key, i) => {
+    const c = CURADORES[key];
+    const active = i === 0;
+    return `<div class="curador-card ${active ? 'active' : ''}" data-value="${key}">
       <div class="spider-wrap">${spiderSVG(c, active)}</div>
       <div class="curador-nombre">${c.label}</div>
       <div class="curador-sub">${c.sub}</div>
     </div>`;
-          })
-          .join('');
-        setupGrid('grid-curador');
-      }
+  }).join('');
+  setupGrid('grid-curador');
+}
 
-      // ══════════════════════════════════════════════
-      // CONTEXTO — HORA + DÍA + CLIMA
-      // ══════════════════════════════════════════════
-      async function leerContexto() {
-        const ahora = new Date();
-        const hora = ahora.getHours();
-        const min = ahora.getMinutes().toString().padStart(2, '0');
-        const dia = ahora.getDay();
+// ══════════════════════════════════════════════
+// CONTEXTO — HORA + DÍA + CLIMA
+// ══════════════════════════════════════════════
+async function leerContexto() {
+  const ahora = new Date();
+  const hora  = ahora.getHours();
+  const min   = ahora.getMinutes().toString().padStart(2,'0');
+  const dia   = ahora.getDay();
 
-        document.getElementById('ctx-time').textContent =
-          hora.toString().padStart(2, '0') + ':' + min;
+  document.getElementById('ctx-time').textContent =
+    hora.toString().padStart(2,'0') + ':' + min;
 
-        let bloque = '',
-          textoHora = '';
-        if (hora >= 6 && hora < 10) {
-          bloque = 'Fricción Cero';
-          energiaBasal = 0.45;
-          textoHora = 'Ciudad despertando. Métrica al mínimo.';
-        } else if (hora >= 10 && hora < 13) {
-          bloque = 'Tracción AM';
-          energiaBasal = 0.6;
-          textoHora = 'El día en marcha. Groove basal continuo.';
-        } else if (hora >= 13 && hora < 16) {
-          bloque = 'Valle de Sobremesa';
-          energiaBasal = 0.5;
-          textoHora = 'Declive biológico. Tensión rítmica relajada.';
-        } else if (hora >= 16 && hora < 19) {
-          bloque = 'Suspensión Activa';
-          energiaBasal = 0.65;
-          textoHora = 'Transición al ocaso. La pista recupera presencia.';
-        } else if (hora >= 19 && hora < 24) {
-          bloque = 'Tensión y Relieve';
-          energiaBasal = 0.8;
-          textoHora =
-            'Sin luz natural. Bajos profundos y patrones envolventes.';
-        } else {
-          bloque = 'Inmersión Total';
-          energiaBasal = 0.55;
-          textoHora = 'Frecuencias hipnóticas. Profundidad antes que impacto.';
+  let bloque = '', textoHora = '';
+  if      (hora >= 6  && hora < 10) { bloque='Fricción Cero';     energiaBasal=0.45; textoHora='Ciudad despertando. Métrica al mínimo.'; }
+  else if (hora >= 10 && hora < 13) { bloque='Tracción AM';       energiaBasal=0.60; textoHora='El día en marcha. Groove basal continuo.'; }
+  else if (hora >= 13 && hora < 16) { bloque='Valle de Sobremesa';energiaBasal=0.50; textoHora='Declive biológico. Tensión rítmica relajada.'; }
+  else if (hora >= 16 && hora < 19) { bloque='Suspensión Activa'; energiaBasal=0.65; textoHora='Transición al ocaso. La pista recupera presencia.'; }
+  else if (hora >= 19 && hora < 24) { bloque='Tensión y Relieve'; energiaBasal=0.80; textoHora='Sin luz natural. Bajos profundos y patrones envolventes.'; }
+  else                               { bloque='Inmersión Total';   energiaBasal=0.55; textoHora='Frecuencias hipnóticas. Profundidad antes que impacto.'; }
+
+  if      (dia === 0)      energiaBasal -= 0.08;
+  else if (dia >= 5)       energiaBasal += 0.08;
+
+  document.getElementById('ctx-bloque').textContent = bloque;
+
+  let textoClima = '';
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current_weather=true');
+    const d = await r.json();
+    const code = d.current_weather.weathercode;
+    const temp = d.current_weather.temperature;
+    const lluvia = [51,53,55,61,63,65,80,81,82,95,96,99].includes(code);
+    const sol    = [0,1].includes(code);
+    if      (lluvia) { textoClima=`Lluvia ${temp}°C — texturas melancólicas.`;    modClimaE=-0.06; modClimaV=-0.12; }
+    else if (sol)    { textoClima=`Despejado ${temp}°C — frecuencias brillantes.`; modClimaE=+0.04; modClimaV=+0.10; }
+    else             { textoClima=`Nublado ${temp}°C.`; }
+    if (temp >= 30) { textoClima += ' Calor extremo.'; modClimaE -= 0.07; }
+    if (temp <= 12) { textoClima += ' Frío intenso.';  modClimaV -= 0.05; }
+  } catch { textoClima = 'Sin datos meteorológicos.'; }
+
+  energiaBasal = Math.max(0.25, Math.min(0.92, energiaBasal));
+  document.getElementById('ctx-desc').textContent = textoHora + ' ' + textoClima;
+}
+
+// ══════════════════════════════════════════════
+// MOTOR 6D
+// ══════════════════════════════════════════════
+function generarPlaylist() {
+  const btn     = document.getElementById('btn-generar');
+  const espacio = document.querySelector('#grid-espacio .active')?.dataset.value || 'casa';
+  const curKey  = document.querySelector('#grid-curador .active')?.dataset.value || 'chloe';
+  const curador = CURADORES[curKey];
+
+  btn.disabled = true;
+  btn.textContent = 'Calculando...';
+
+  // Target acústico = ADN curador modulado por contexto
+  const target = {
+    e:   Math.max(0, Math.min(1, curador.e   + (energiaBasal - 0.60) * 0.35 + modClimaE)),
+    v:   Math.max(0, Math.min(1, curador.v   + modClimaV)),
+    ac:  curador.ac,
+    ins: curador.ins,
+    spe: curador.spe,
+    bpm: curador.bpm,
+  };
+
+  // Ajuste leve por espacio
+  if (espacio === 'bar')  target.e = Math.min(1, target.e + 0.08);
+  if (espacio === 'casa') target.e = Math.max(0, target.e - 0.04);
+
+  console.log(`🎛️  [${curKey}] × [${espacio}] → e:${target.e.toFixed(2)} v:${target.v.toFixed(2)} ac:${target.ac.toFixed(2)} ins:${target.ins.toFixed(2)}`);
+
+  // Scoring sobre toda la batea — sin filtros duros
+  const scored = CATALOGO.map(t => {
+    const tb = normBPM(t.bpm ?? 120);
+
+    const dist = Math.sqrt(
+      PESOS.e   * Math.pow((t.e   ?? 0.5) - target.e,   2) +
+      PESOS.v   * Math.pow((t.v   ?? 0.4) - target.v,   2) +
+      PESOS.ac  * Math.pow((t.ac  ?? 0.3) - target.ac,  2) +
+      PESOS.ins * Math.pow((t.ins ?? 0.5) - target.ins, 2) +
+      PESOS.spe * Math.pow((t.spe ?? 0.2) - target.spe, 2) +
+      PESOS.bpm * Math.pow(tb             - target.bpm, 2)
+    );
+
+    // Bonus suaves — informan, no filtran
+    let bonus = 0;
+    const spArr = Array.isArray(t.sp) ? t.sp : (t.sp ?? '').split(',').map(s => s.trim());
+    if (spArr.includes(espacio))   bonus -= 0.04;
+    if (t.sel?.includes(curKey))   bonus -= 0.03;
+
+    // Bonus por género — cuántos géneros del track coinciden con el curador
+    const generosAfines = GENEROS_CURADOR[curKey] || [];
+    const trackGenres   = t.genres || [];
+    const matches       = trackGenres.filter(g => generosAfines.includes(g)).length;
+    if (matches >= 2)   bonus -= 0.08;
+    else if (matches === 1) bonus -= 0.04;
+
+    return { track: t, score: dist + bonus + Math.random() * 0.035 };
+  });
+
+  scored.sort((a, b) => a.score - b.score);
+
+  // Selección probabilística del top 18%
+  const NUM = 15;
+  const playlist = [];
+  let pool = [...scored];
+
+  for (let i = 0; i < NUM; i++) {
+    if (!pool.length) break;
+    const ventana = Math.max(8, Math.min(Math.floor(pool.length * 0.18), pool.length));
+    const idx     = Math.floor(Math.pow(Math.random(), 1.7) * ventana);
+    playlist.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+
+  setTimeout(() => {
+    renderResultado(playlist, curKey, espacio, target);
+    btn.disabled    = false;
+    btn.textContent = 'Generar 60 minutos';
+  }, 280);
+}
+
+// ══════════════════════════════════════════════
+// HELPERS DE DESCRIPCIÓN
+// ══════════════════════════════════════════════
+function labelEnergia(e) {
+  if (e < 0.4)  return 'contemplativa';
+  if (e < 0.6)  return 'fluida';
+  if (e < 0.75) return 'activa';
+  return 'explosiva';
+}
+
+function labelBPM(bpm) {
+  if (bpm < 90)  return 'lento';
+  if (bpm < 110) return 'cadencioso';
+  if (bpm < 125) return 'constante';
+  if (bpm < 140) return 'pistera';
+  return 'veloz';
+}
+
+function labelCurva(eInicio, eFin) {
+  const diff = eFin - eInicio;
+  if (diff >  0.12) return 'en ascenso';
+  if (diff < -0.12) return 'en descenso';
+  return 'lineal';
+}
+
+function generarDescripcion(items, curKey, espacio, bloque) {
+  const curador  = CURADORES[curKey];
+  const tracks   = items.map(i => i.track);
+
+  // Stats
+  const avgE   = tracks.reduce((a, t) => a + (t.e ?? 0.5), 0) / tracks.length;
+  const avgBPM = Math.round(tracks.reduce((a, t) => a + (t.bpm ?? 120), 0) / tracks.length);
+  const curva  = labelCurva(tracks[0]?.e ?? avgE, tracks[tracks.length-1]?.e ?? avgE);
+
+  // Top 3 artistas más frecuentes
+  const freq = {};
+  tracks.forEach(t => { if (t.a) freq[t.a] = (freq[t.a] || 0) + 1; });
+  const topArtistas = Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([a]) => a.split(',')[0].trim()); // Tomar solo el primer artista si hay varios
+
+  const artistasStr = topArtistas.length >= 2
+    ? topArtistas.slice(0, -1).join(', ') + ' y ' + topArtistas[topArtistas.length - 1]
+    : topArtistas[0] || '';
+
+  return `Set construido desde el ADN de ${curador.label}. Energía ${labelEnergia(avgE)} ${curva}, tempo ${labelBPM(avgBPM)}. ${artistasStr} como columna vertebral.`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER RESULTADO
+// ══════════════════════════════════════════════
+function renderResultado(items, curKey, espacio, target) {
+  const res     = document.getElementById('resultado');
+  const curador = CURADORES[curKey];
+  const tracks  = items.map(i => i.track);
+  const ytIds   = tracks.map(t => t.yt).filter(id => id && id !== 'PENDIENTE');
+  const ytUrl   = `https://www.youtube.com/watch_videos?video_ids=${ytIds.join(',')}`;
+
+  // 4 thumbnails — primeros 4 tracks con yt id
+  const thumbIds  = ytIds.slice(0, 4);
+  const thumbHTML = thumbIds.map(id =>
+    `<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy">`
+  ).join('');
+
+  // Duración total
+  const durTotal  = tracks.reduce((a, t) => a + (t.dur ?? 240), 0);
+  const durMin    = Math.floor(durTotal / 60);
+  const durSec    = String(durTotal % 60).padStart(2, '0');
+
+  // BPM promedio
+  const avgBPM    = Math.round(tracks.reduce((a, t) => a + (t.bpm ?? 120), 0) / tracks.length);
+
+  // Descripción editorial
+  const desc      = generarDescripcion(items, curKey, espacio, document.getElementById('ctx-bloque').textContent);
+
+  const cardHTML = `
+    <div class="result-card">
+      <div class="thumb-grid">${thumbHTML}</div>
+      <div class="result-body">
+        <div class="result-meta">
+          <div class="result-meta-item">
+            <div class="result-meta-label">Duración</div>
+            <div class="result-meta-value">${durMin}:${durSec}</div>
+          </div>
+          <div class="result-meta-item">
+            <div class="result-meta-label">Tracks</div>
+            <div class="result-meta-value">${tracks.length}</div>
+          </div>
+          <div class="result-meta-item">
+            <div class="result-meta-label">Tempo</div>
+            <div class="result-meta-value">${labelBPM(avgBPM)}</div>
+          </div>
+          <div class="result-meta-item">
+            <div class="result-meta-label">Energía</div>
+            <div class="result-meta-value">${labelEnergia(target.e)}</div>
+          </div>
+        </div>
+        <div class="result-desc">${desc}</div>
+        <button class="btn-youtube" onclick="window.open('${ytUrl}','_blank')">▶ Abrir en YouTube</button>
+      </div>
+    </div>`;
+
+  document.getElementById('sheet-inner').innerHTML = cardHTML;
+  openSheet();
+}
+
+function openSheet() {
+  document.getElementById('sheet-overlay').classList.add('open');
+  document.getElementById('bottom-sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  document.getElementById('sheet-overlay').classList.remove('open');
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('sheet-overlay').addEventListener('click', closeSheet);
+
+// ══════════════════════════════════════════════
+// INTERACTIVIDAD GRILLAS
+// ══════════════════════════════════════════════
+function setupGrid(id) {
+  const grid = document.getElementById(id);
+  if (!grid) return;
+  grid.querySelectorAll('[data-value]').forEach(card => {
+    card.addEventListener('click', () => {
+      grid.querySelectorAll('[data-value]').forEach(c => {
+        c.classList.remove('active');
+        if (id === 'grid-curador') {
+          const k = c.dataset.value;
+          if (CURADORES[k]) c.querySelector('.spider-wrap').innerHTML = spiderSVG(CURADORES[k], false);
         }
-
-        if (dia === 0) energiaBasal -= 0.08;
-        else if (dia >= 5) energiaBasal += 0.08;
-
-        document.getElementById('ctx-bloque').textContent = bloque;
-
-        let textoClima = '';
-        try {
-          const r = await fetch(
-            'https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current_weather=true'
-          );
-          const d = await r.json();
-          const code = d.current_weather.weathercode;
-          const temp = d.current_weather.temperature;
-          const lluvia = [
-            51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99,
-          ].includes(code);
-          const sol = [0, 1].includes(code);
-          if (lluvia) {
-            textoClima = `Lluvia ${temp}°C — texturas melancólicas.`;
-            modClimaE = -0.06;
-            modClimaV = -0.12;
-          } else if (sol) {
-            textoClima = `Despejado ${temp}°C — frecuencias brillantes.`;
-            modClimaE = +0.04;
-            modClimaV = +0.1;
-          } else {
-            textoClima = `Nublado ${temp}°C.`;
-          }
-          if (temp >= 30) {
-            textoClima += ' Calor extremo.';
-            modClimaE -= 0.07;
-          }
-          if (temp <= 12) {
-            textoClima += ' Frío intenso.';
-            modClimaV -= 0.05;
-          }
-        } catch {
-          textoClima = 'Sin datos meteorológicos.';
-        }
-
-        energiaBasal = Math.max(0.25, Math.min(0.92, energiaBasal));
-        document.getElementById('ctx-desc').textContent =
-          textoHora + ' ' + textoClima;
+      });
+      card.classList.add('active');
+      if (id === 'grid-curador') {
+        const k = card.dataset.value;
+        if (CURADORES[k]) card.querySelector('.spider-wrap').innerHTML = spiderSVG(CURADORES[k], true);
       }
+      const res = document.getElementById('resultado');
+      res.style.display = 'none';
+      res.innerHTML = '';
+    });
+  });
+}
 
-      // ══════════════════════════════════════════════
-      // MOTOR 6D
-      // ══════════════════════════════════════════════
-      function generarPlaylist() {
-        const btn = document.getElementById('btn-generar');
-        const espacio =
-          document.querySelector('#grid-espacio .active')?.dataset.value ||
-          'casa';
-        const curKey =
-          document.querySelector('#grid-curador .active')?.dataset.value ||
-          'chloe';
-        const curador = CURADORES[curKey];
+// ══════════════════════════════════════════════
+// ARRANQUE
+// ══════════════════════════════════════════════
+async function arrancarMotor() {
+  try {
+    const res = await fetch('./database.json');
+    CATALOGO  = await res.json();
+    console.log(`✅ Batea: ${CATALOGO.length} tracks`);
+    await leerContexto();
+    renderCuradores();
+    setupGrid('grid-espacio');
+  } catch (err) {
+    console.error('❌ Error cargando database.json', err);
+    document.getElementById('ctx-bloque').textContent = 'Error cargando batea';
+  }
+}
 
-        btn.disabled = true;
-        btn.textContent = 'Calculando...';
-
-        // Target acústico = ADN curador modulado por contexto
-        const target = {
-          e: Math.max(
-            0,
-            Math.min(1, curador.e + (energiaBasal - 0.6) * 0.35 + modClimaE)
-          ),
-          v: Math.max(0, Math.min(1, curador.v + modClimaV)),
-          ac: curador.ac,
-          ins: curador.ins,
-          spe: curador.spe,
-          bpm: curador.bpm,
-        };
-
-        // Ajuste leve por espacio
-        if (espacio === 'bar') target.e = Math.min(1, target.e + 0.08);
-        if (espacio === 'casa') target.e = Math.max(0, target.e - 0.04);
-
-        console.log(
-          `🎛️  [${curKey}] × [${espacio}] → e:${target.e.toFixed(
-            2
-          )} v:${target.v.toFixed(2)} ac:${target.ac.toFixed(
-            2
-          )} ins:${target.ins.toFixed(2)}`
-        );
-
-        // Scoring sobre toda la batea — sin filtros duros
-        const scored = CATALOGO.map((t) => {
-          const tb = normBPM(t.bpm ?? 120);
-
-          const dist = Math.sqrt(
-            PESOS.e * Math.pow((t.e ?? 0.5) - target.e, 2) +
-              PESOS.v * Math.pow((t.v ?? 0.4) - target.v, 2) +
-              PESOS.ac * Math.pow((t.ac ?? 0.3) - target.ac, 2) +
-              PESOS.ins * Math.pow((t.ins ?? 0.5) - target.ins, 2) +
-              PESOS.spe * Math.pow((t.spe ?? 0.2) - target.spe, 2) +
-              PESOS.bpm * Math.pow(tb - target.bpm, 2)
-          );
-
-          // Bonus suaves — informan, no filtran
-          let bonus = 0;
-          const spArr = Array.isArray(t.sp)
-            ? t.sp
-            : (t.sp ?? '').split(',').map((s) => s.trim());
-          if (spArr.includes(espacio)) bonus -= 0.04;
-          if (t.sel?.includes(curKey)) bonus -= 0.03;
-
-          // Bonus por género — cuántos géneros del track coinciden con el curador
-          const generosAfines = GENEROS_CURADOR[curKey] || [];
-          const trackGenres = t.genres || [];
-          const matches = trackGenres.filter((g) =>
-            generosAfines.includes(g)
-          ).length;
-          if (matches >= 2) bonus -= 0.08;
-          else if (matches === 1) bonus -= 0.04;
-
-          return { track: t, score: dist + bonus + Math.random() * 0.035 };
-        });
-
-        scored.sort((a, b) => a.score - b.score);
-
-        // Selección probabilística del top 18%
-        const NUM = 15;
-        const playlist = [];
-        let pool = [...scored];
-
-        for (let i = 0; i < NUM; i++) {
-          if (!pool.length) break;
-          const ventana = Math.max(
-            8,
-            Math.min(Math.floor(pool.length * 0.18), pool.length)
-          );
-          const idx = Math.floor(Math.pow(Math.random(), 1.7) * ventana);
-          playlist.push(pool[idx]);
-          pool.splice(idx, 1);
-        }
-
-        setTimeout(() => {
-          renderResultado(playlist, curKey, espacio, target);
-          btn.disabled = false;
-          btn.textContent = 'Generar 60 minutos';
-        }, 280);
-      }
-
-      // ══════════════════════════════════════════════
-      // RENDER RESULTADO
-      // ══════════════════════════════════════════════
-      function renderResultado(items, curKey, espacio, target) {
-        const res = document.getElementById('resultado');
-        const curador = CURADORES[curKey];
-        const ytIds = items
-          .map((i) => i.track.yt)
-          .filter((id) => id && id !== 'PENDIENTE')
-          .join(',');
-        const ytUrl = `https://www.youtube.com/watch_videos?video_ids=${ytIds}`;
-
-        let html = `<div class="resultado-header">${items.length} tracks · ${
-          curador.label
-        } × ${espacio} · e:${target.e.toFixed(2)} v:${target.v.toFixed(
-          2
-        )}</div>`;
-        html += `<button class="btn-youtube" onclick="window.open('${ytUrl}','_blank')">▶ Abrir en YouTube</button>`;
-
-        res.innerHTML = html;
-        res.style.display = 'flex';
-        res.style.flexDirection = 'column';
-        res.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      // ══════════════════════════════════════════════
-      // INTERACTIVIDAD GRILLAS
-      // ══════════════════════════════════════════════
-      function setupGrid(id) {
-        const grid = document.getElementById(id);
-        if (!grid) return;
-        grid.querySelectorAll('[data-value]').forEach((card) => {
-          card.addEventListener('click', () => {
-            grid.querySelectorAll('[data-value]').forEach((c) => {
-              c.classList.remove('active');
-              if (id === 'grid-curador') {
-                const k = c.dataset.value;
-                if (CURADORES[k])
-                  c.querySelector('.spider-wrap').innerHTML = spiderSVG(
-                    CURADORES[k],
-                    false
-                  );
-              }
-            });
-            card.classList.add('active');
-            if (id === 'grid-curador') {
-              const k = card.dataset.value;
-              if (CURADORES[k])
-                card.querySelector('.spider-wrap').innerHTML = spiderSVG(
-                  CURADORES[k],
-                  true
-                );
-            }
-            const res = document.getElementById('resultado');
-            res.style.display = 'none';
-            res.innerHTML = '';
-          });
-        });
-      }
-
-      // ══════════════════════════════════════════════
-      // ARRANQUE
-      // ══════════════════════════════════════════════
-      async function arrancarMotor() {
-        try {
-          const res = await fetch('./database.json');
-          CATALOGO = await res.json();
-          console.log(`✅ Batea: ${CATALOGO.length} tracks`);
-          await leerContexto();
-          renderCuradores();
-          setupGrid('grid-espacio');
-        } catch (err) {
-          console.error('❌ Error cargando database.json', err);
-          document.getElementById('ctx-bloque').textContent =
-            'Error cargando batea';
-        }
-      }
-
-      document
-        .getElementById('btn-generar')
-        .addEventListener('click', generarPlaylist);
-      arrancarMotor();
-    </script>
-  </body>
+document.getElementById('btn-generar').addEventListener('click', generarPlaylist);
+arrancarMotor();
+</script>
+</body>
 </html>
