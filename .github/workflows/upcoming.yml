@@ -2,11 +2,12 @@ name: Actualizar upcoming.json
 
 on:
   schedule:
-    # Corre el día 1 y el 15 de cada mes a las 6:00 AM UTC (3:00 AM Buenos Aires)
     - cron: '0 6 1 * *'
     - cron: '0 6 15 * *'
-  # También permite correrlo manualmente desde GitHub Actions
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   update-upcoming:
@@ -19,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Generar upcoming.json
         run: node generate-upcoming.mjs
