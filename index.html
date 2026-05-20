@@ -651,25 +651,12 @@ function generarPlaylist() {
     // Bonus por afinidad curatorial — jerarquía de confianza
     let bonus = 0;
 
-    if (ARTIST_GRAPH) {
-      const curadorGraph = ARTIST_GRAPH.curadores?.[curKey];
-      const artistTrack  = (t.a || '').split(',')[0].trim(); // primer artista si hay varios
-
-      if (curadorGraph) {
-        if (curadorGraph.level1.some(a => a.toLowerCase() === artistTrack.toLowerCase())) {
-          bonus -= 0.12; // núcleo editorial — máxima confianza
-        } else if (curadorGraph.level2.some(a => a.toLowerCase() === artistTrack.toLowerCase())) {
-          bonus -= 0.06; // similar Last.fm del núcleo — confianza media
-        }
-      }
-
-      // Bonus leve si el artista aparece en el similarMap de algún artista del núcleo
-      const l1names = ARTIST_GRAPH.curadores?.[curKey]?.level1 || [];
-      const enOrbitaL1 = l1names.some(n => {
-        const sims = ARTIST_GRAPH.similarMap?.[n] || [];
-        return sims.some(s => s.toLowerCase() === artistTrack.toLowerCase());
-      });
-      if (enOrbitaL1 && bonus === 0) bonus -= 0.04;
+    const idx = GRAPH_INDEX[curKey];
+    if (idx) {
+      const artistTrack = (t.a || '').split(',')[0].trim().toLowerCase();
+      if      (idx.l1.has(artistTrack))              bonus -= 0.12;
+      else if (idx.l2.has(artistTrack))              bonus -= 0.06;
+      else if (idx.orbit.has(artistTrack) && bonus === 0) bonus -= 0.04;
     }
 
     // Bonus por espacio y selección histórica
@@ -867,6 +854,29 @@ function setupGrid(id) {
 // ══════════════════════════════════════════════
 // ARRANQUE
 // ══════════════════════════════════════════════
+// Índice pre-computado del grafo para búsquedas O(1)
+let GRAPH_INDEX = {}; // curKey → { l1: Set, l2: Set, orbit: Set }
+
+function indexarGrafo() {
+  if (!ARTIST_GRAPH) return;
+  GRAPH_INDEX = {};
+
+  Object.entries(ARTIST_GRAPH.curadores || {}).forEach(([curKey, data]) => {
+    const l1    = new Set((data.level1 || []).map(a => a.toLowerCase()));
+    const l2    = new Set((data.level2 || []).map(a => a.toLowerCase()));
+
+    // Órbita: similares de los artistas L1 según similarMap
+    const orbit = new Set();
+    (data.level1 || []).forEach(n => {
+      (ARTIST_GRAPH.similarMap?.[n] || []).forEach(s => orbit.add(s.toLowerCase()));
+    });
+
+    GRAPH_INDEX[curKey] = { l1, l2, orbit };
+  });
+
+  console.log(`✅ Grafo indexado para ${Object.keys(GRAPH_INDEX).length} curadores`);
+}
+
 async function arrancarMotor() {
   try {
     const [dbRes, graphRes] = await Promise.all([
@@ -876,7 +886,10 @@ async function arrancarMotor() {
     CATALOGO     = await dbRes.json();
     ARTIST_GRAPH = graphRes ? await graphRes.json() : null;
     console.log(`✅ Batea: ${CATALOGO.length} tracks`);
-    if (ARTIST_GRAPH) console.log(`✅ Grafo: ${Object.keys(ARTIST_GRAPH.similarMap || {}).length} artistas`);
+    if (ARTIST_GRAPH) {
+      console.log(`✅ Grafo: ${Object.keys(ARTIST_GRAPH.similarMap || {}).length} artistas`);
+      indexarGrafo();
+    }
     await leerContexto();
     renderCuradores();
     setupGrid('grid-espacio');
