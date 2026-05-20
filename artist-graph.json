@@ -1,0 +1,72 @@
+{
+  "peggy": {
+    "level1": [
+      "Peggy Gou",
+      "DJ Koze",
+      "Roman Flügel",
+      "Prins Thomas",
+      "Antal"
+    ],
+    "level2": []
+  },
+  "jamie": {
+    "level1": [
+      "Jamie xx",
+      "Gil Scott-Heron",
+      "Four Tet",
+      "Caribou",
+      "Actress"
+    ],
+    "level2": []
+  },
+  "solange": {
+    "level1": [
+      "Solange",
+      "Frank Ocean",
+      "Blood Orange",
+      "Kelela",
+      "Sampha"
+    ],
+    "level2": []
+  },
+  "floating": {
+    "level1": [
+      "Floating Points",
+      "Four Tet",
+      "Caribou",
+      "Burial",
+      "Jon Hopkins"
+    ],
+    "level2": []
+  },
+  "stvincent": {
+    "level1": [
+      "St. Vincent",
+      "David Bowie",
+      "Talking Heads",
+      "Tune-Yards",
+      "Sufjan Stevens"
+    ],
+    "level2": []
+  },
+  "boniver": {
+    "level1": [
+      "Bon Iver",
+      "Sufjan Stevens",
+      "Fleet Foxes",
+      "Iron & Wine",
+      "The National"
+    ],
+    "level2": []
+  },
+  "miranda": {
+    "level1": [
+      "Miranda!",
+      "Juliana Gattas",
+      "ABBA",
+      "Virus",
+      "Lali"
+    ],
+    "level2": []
+  }
+}
