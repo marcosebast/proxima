@@ -507,6 +507,7 @@ const normBPM = bpm => Math.max(0, Math.min(1, (bpm - 61) / (172 - 61)));
 
 // Estado global
 let CATALOGO     = [];
+let ARTIST_GRAPH = null;
 let energiaBasal = 0.60;
 let modClimaE    = 0;
 let modClimaV    = 0;
@@ -647,18 +648,41 @@ function generarPlaylist() {
       PESOS.bpm * Math.pow(tb             - target.bpm, 2)
     );
 
-    // Bonus suaves — informan, no filtran
+    // Bonus por afinidad curatorial — jerarquía de confianza
     let bonus = 0;
-    const spArr = Array.isArray(t.sp) ? t.sp : (t.sp ?? '').split(',').map(s => s.trim());
-    if (spArr.includes(espacio))   bonus -= 0.04;
-    if (t.sel?.includes(curKey))   bonus -= 0.03;
 
-    // Bonus por género — cuántos géneros del track coinciden con el curador
+    if (ARTIST_GRAPH) {
+      const curadorGraph = ARTIST_GRAPH.curadores?.[curKey];
+      const artistTrack  = (t.a || '').split(',')[0].trim(); // primer artista si hay varios
+
+      if (curadorGraph) {
+        if (curadorGraph.level1.some(a => a.toLowerCase() === artistTrack.toLowerCase())) {
+          bonus -= 0.12; // núcleo editorial — máxima confianza
+        } else if (curadorGraph.level2.some(a => a.toLowerCase() === artistTrack.toLowerCase())) {
+          bonus -= 0.06; // similar Last.fm del núcleo — confianza media
+        }
+      }
+
+      // Bonus leve si el artista aparece en el similarMap de algún artista del núcleo
+      const l1names = ARTIST_GRAPH.curadores?.[curKey]?.level1 || [];
+      const enOrbitaL1 = l1names.some(n => {
+        const sims = ARTIST_GRAPH.similarMap?.[n] || [];
+        return sims.some(s => s.toLowerCase() === artistTrack.toLowerCase());
+      });
+      if (enOrbitaL1 && bonus === 0) bonus -= 0.04;
+    }
+
+    // Bonus por espacio y selección histórica
+    const spArr = Array.isArray(t.sp) ? t.sp : (t.sp ?? '').split(',').map(s => s.trim());
+    if (spArr.includes(espacio))  bonus -= 0.02;
+    if (t.sel?.includes(curKey))  bonus -= 0.02;
+
+    // Bonus por género
     const generosAfines = GENEROS_CURADOR[curKey] || [];
     const trackGenres   = t.genres || [];
     const matches       = trackGenres.filter(g => generosAfines.includes(g)).length;
-    if (matches >= 2)   bonus -= 0.08;
-    else if (matches === 1) bonus -= 0.04;
+    if (matches >= 2)        bonus -= 0.03;
+    else if (matches === 1)  bonus -= 0.015;
 
     return { track: t, score: dist + bonus + Math.random() * 0.035 };
   });
@@ -845,9 +869,14 @@ function setupGrid(id) {
 // ══════════════════════════════════════════════
 async function arrancarMotor() {
   try {
-    const res = await fetch('./database.json');
-    CATALOGO  = await res.json();
+    const [dbRes, graphRes] = await Promise.all([
+      fetch('./database.json'),
+      fetch('./artist-graph.json').catch(() => null),
+    ]);
+    CATALOGO     = await dbRes.json();
+    ARTIST_GRAPH = graphRes ? await graphRes.json() : null;
     console.log(`✅ Batea: ${CATALOGO.length} tracks`);
+    if (ARTIST_GRAPH) console.log(`✅ Grafo: ${Object.keys(ARTIST_GRAPH.similarMap || {}).length} artistas`);
     await leerContexto();
     renderCuradores();
     setupGrid('grid-espacio');
