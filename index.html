@@ -315,12 +315,18 @@
       line-height: 1.7;
     }
 
-    .btn-youtube {
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .btn-youtube, .btn-spotify {
       background: var(--fg);
       color: var(--bg);
       border: none;
       padding: 1.1rem;
-      width: 100%;
       font-family: var(--mono);
       font-size: 0.72rem;
       font-weight: 500;
@@ -331,6 +337,9 @@
     }
 
     .btn-youtube:hover { background: #d8d8d8; }
+    .btn-spotify { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+    .btn-spotify:hover { border-color: var(--fg); }
+    .btn-spotify:disabled { background: #222; color: var(--dim); cursor: not-allowed; }
 
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(6px); }
@@ -704,9 +713,15 @@ function renderResultado(items, curKey, espacio, target) {
           </div>
         </div>
         <div class="result-desc">${desc}</div>
-        <button class="btn-youtube" onclick="window.open('${ytUrl}','_blank')">▶ Abrir en YouTube</button>
+        <div class="result-actions">
+          <button class="btn-youtube" onclick="window.open('${ytUrl}','_blank')">▶ YouTube</button>
+          <button class="btn-spotify" onclick="crearPlaylistSpotify()">▶ Spotify</button>
+        </div>
       </div>
     </div>`;
+
+  // Guardar tracks para Spotify
+  window._lastPlaylist = tracks;
 
   document.getElementById('sheet-inner').innerHTML = cardHTML;
   openSheet();
@@ -770,7 +785,162 @@ async function arrancarMotor() {
   }
 }
 
+// ══════════════════════════════════════════════
+// SPOTIFY PKCE
+// ══════════════════════════════════════════════
+const SPOTIFY_CLIENT_ID   = 'eeaf61207380435790cf779abec1b0b4';
+const SPOTIFY_REDIRECT    = 'https://marcosebast.github.io/proxima/';
+const SPOTIFY_SCOPES      = 'playlist-modify-public playlist-modify-private';
+
+let spotifyToken     = null;
+let pendingPlaylist  = null; // tracks pendientes si se vuelve del OAuth
+
+function generateRandom(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data    = encoder.encode(plain);
+  return crypto.subtle.digest('SHA-256', data);
+}
+
+function base64urlencode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+async function iniciarOAuth(trackUris, playlistName) {
+  const verifier  = generateRandom(64);
+  const challenge = base64urlencode(await sha256(verifier));
+
+  // Guardar estado para cuando vuelva el redirect
+  sessionStorage.setItem('pkce_verifier', verifier);
+  sessionStorage.setItem('pending_uris',  JSON.stringify(trackUris));
+  sessionStorage.setItem('pending_name',  playlistName);
+
+  const params = new URLSearchParams({
+    client_id:             SPOTIFY_CLIENT_ID,
+    response_type:         'code',
+    redirect_uri:          SPOTIFY_REDIRECT,
+    scope:                 SPOTIFY_SCOPES,
+    code_challenge_method: 'S256',
+    code_challenge:        challenge,
+  });
+
+  window.location = `https://accounts.spotify.com/authorize?${params}`;
+}
+
+async function intercambiarToken(code) {
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'authorization_code',
+      code,
+      redirect_uri:  SPOTIFY_REDIRECT,
+      client_id:     SPOTIFY_CLIENT_ID,
+      code_verifier: verifier,
+    }),
+  });
+  const data = await res.json();
+  return data.access_token;
+}
+
+async function crearEnSpotify(token, trackUris, playlistName) {
+  // Obtener user id
+  const meRes  = await fetch('https://api.spotify.com/v1/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const me = await meRes.json();
+
+  // Crear playlist
+  const plRes  = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: playlistName, description: 'Generada por Próxima', public: false }),
+  });
+  const pl = await plRes.json();
+
+  // Agregar tracks en batches de 100
+  for (let i = 0; i < trackUris.length; i += 100) {
+    await fetch(`https://api.spotify.com/v1/playlists/${pl.id}/tracks`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uris: trackUris.slice(i, i + 100) }),
+    });
+  }
+
+  return pl.external_urls?.spotify || `https://open.spotify.com/playlist/${pl.id}`;
+}
+
+async function crearPlaylistSpotify() {
+  const btn = document.querySelector('.btn-spotify');
+  if (!btn) return;
+
+  const curador  = document.querySelector('#grid-curador .active')?.dataset.value || 'proxima';
+  const espacio  = document.querySelector('#grid-espacio .active')?.dataset.value || 'set';
+  const nombre   = `Próxima — ${CURADORES[curador]?.label} × ${espacio}`;
+
+  // Obtener URIs del estado guardado
+  const trackUris = (window._lastPlaylist || [])
+    .map(t => t.id)
+    .filter(Boolean);
+
+  if (!trackUris.length) return;
+
+  if (!spotifyToken) {
+    iniciarOAuth(trackUris, nombre);
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Creando...';
+
+  try {
+    const url = await crearEnSpotify(spotifyToken, trackUris, nombre);
+    window.open(url, '_blank');
+  } catch(e) {
+    console.error(e);
+    btn.textContent = 'Error';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '▶ Spotify';
+  }
+}
+
+// Manejar el redirect de vuelta desde Spotify OAuth
+async function manejarOAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get('code');
+  if (!code) return;
+
+  // Limpiar URL
+  window.history.replaceState({}, '', window.location.pathname);
+
+  try {
+    spotifyToken = await intercambiarToken(code);
+
+    const uris  = JSON.parse(sessionStorage.getItem('pending_uris') || '[]');
+    const name  = sessionStorage.getItem('pending_name') || 'Próxima';
+    sessionStorage.removeItem('pkce_verifier');
+    sessionStorage.removeItem('pending_uris');
+    sessionStorage.removeItem('pending_name');
+
+    if (uris.length) {
+      const url = await crearEnSpotify(spotifyToken, uris, name);
+      window.open(url, '_blank');
+    }
+  } catch(e) {
+    console.error('OAuth error:', e);
+  }
+}
+
 document.getElementById('btn-generar').addEventListener('click', generarPlaylist);
+manejarOAuthCallback();
 arrancarMotor();
 </script>
 </body>
