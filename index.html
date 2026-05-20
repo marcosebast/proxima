@@ -954,7 +954,10 @@ async function crearPlaylistSpotify() {
 
   const curador  = document.querySelector('#grid-curador .active')?.dataset.value || 'proxima';
   const espacio  = document.querySelector('#grid-espacio .active')?.dataset.value || 'set';
-  const nombre   = `Próxima — ${CURADORES[curador]?.label} × ${espacio}`;
+  const ahora   = new Date();
+  const stamp   = ahora.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' })
+                + ' ' + ahora.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+  const nombre  = `Próxima — ${CURADORES[curador]?.label} × ${espacio} · ${stamp}`;
 
   // Obtener URIs del estado guardado
   const trackUris = (window._lastPlaylist || [])
