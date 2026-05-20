@@ -653,7 +653,7 @@ function generarPlaylist() {
 
     const idx = GRAPH_INDEX[curKey];
     if (idx) {
-      const artistTrack = (t.a || '').split(',')[0].trim().toLowerCase();
+      const artistTrack = (typeof t.a === 'string' ? t.a : String(t.a || '')).split(',')[0].trim().toLowerCase();
       if      (idx.l1.has(artistTrack))              bonus -= 0.12;
       else if (idx.l2.has(artistTrack))              bonus -= 0.06;
       else if (idx.orbit.has(artistTrack) && bonus === 0) bonus -= 0.04;
